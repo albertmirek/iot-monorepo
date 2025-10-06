@@ -1,0 +1,21 @@
+services:
+
+  consumer:
+    build:
+      dockerfile: apps/consumer/Dockerfile
+      target: dev
+      context: .
+    volumes:
+      - ./apps/consumer:/app
+    ports:
+      - 3000:3000
+
+  producer:
+    build:
+      dockerfile: apps/producer/Dockerfile
+      target: dev
+      context: .
+    volumes:
+      - ./apps/producer:/app
+    ports:
+      - 3001:3000
