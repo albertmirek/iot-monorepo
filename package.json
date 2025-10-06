@@ -1,0 +1,6 @@
+{
+  "name": "iot-monorepo",
+  "private": true,
+  "author": "Albert Mírek",
+  "packageManager": "pnpm@10.11.0"
+}
