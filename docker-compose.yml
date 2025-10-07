@@ -19,3 +19,14 @@ services:
       - ./apps/producer:/app
     ports:
       - 3001:3000
+
+  rabbitmq:
+    image: rabbitmq:4.1.4
+    restart: always
+    ports:
+      - 5672:5672
+      - 15672:15672
+    hostname: "rabbit"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
