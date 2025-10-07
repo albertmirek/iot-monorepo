@@ -9,6 +9,7 @@ all:
 	@${DOCKER_COMPOSE} pull
 	$(MAKE) run
 	$(MAKE) install
+	$(MAKE) logs
 
 .PHONY .SILENT: run
 run:
