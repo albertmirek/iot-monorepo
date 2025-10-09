@@ -9,6 +9,10 @@ services:
       - ./apps/consumer:/app
     ports:
       - 3000:3000
+    environment:
+      RABBIT_MQ_URL: amqp://admin:admin@rabbitmq:5672
+    depends_on:
+      - rabbitmq
 
   producer:
     build:
@@ -19,14 +23,18 @@ services:
       - ./apps/producer:/app
     ports:
       - 3001:3000
+    environment:
+      RABBIT_MQ_URL: amqp://admin:admin@rabbitmq:5672
+    depends_on:
+      - rabbitmq
 
   rabbitmq:
-    image: rabbitmq:4.1.4
+    image: rabbitmq:4.1.4-management
     restart: always
     ports:
       - 5672:5672
       - 15672:15672
-    hostname: "rabbit"
+    hostname: "rabbitmq"
     environment:
       RABBITMQ_DEFAULT_USER: admin
       RABBITMQ_DEFAULT_PASS: admin
