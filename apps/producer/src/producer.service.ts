@@ -1,14 +1,15 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
 import { Interval } from '@nestjs/schedule';
 
 @Injectable()
 export class ProducerService {
-  private readonly logger = new Logger(ProducerService.name);
+  constructor(@Inject('PRODUCER_SERVICE') private client: ClientProxy) {}
 
-  constructor() {}
-
-  @Interval(10000)
+  @Interval(5000)
   public produceTelemetryData() {
-    console.log('Random data', Math.random());
+    return this.client.emit('telemetry_data_emitted', {
+      something: Math.random(),
+    });
   }
 }
