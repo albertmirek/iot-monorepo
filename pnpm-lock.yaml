@@ -10,6 +10,9 @@ importers:
 
   apps/consumer:
     dependencies:
+      '@albertmirek/node-lib':
+        specifier: workspace:*
+        version: link:../../packages/node-lib
       '@nestjs/common':
         specifier: ^11.0.1
         version: 11.1.6(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -34,6 +37,9 @@ importers:
       rxjs:
         specifier: ^7.8.1
         version: 7.8.2
+      zod:
+        specifier: ^4.1.12
+        version: 4.1.12
     devDependencies:
       '@eslint/eslintrc':
         specifier: ^3.2.0
@@ -113,6 +119,9 @@ importers:
 
   apps/producer:
     dependencies:
+      '@albertmirek/node-lib':
+        specifier: workspace:*
+        version: link:../../packages/node-lib
       '@nestjs/common':
         specifier: ^11.0.1
         version: 11.1.6(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -220,7 +229,11 @@ importers:
         specifier: ^8.20.0
         version: 8.46.0(eslint@9.37.0)(typescript@5.9.3)
 
-  packages/node-lib: {}
+  packages/node-lib:
+    dependencies:
+      zod:
+        specifier: ^4.1.12
+        version: 4.1.12
 
 packages:
 
@@ -3549,6 +3562,9 @@ packages:
   yoctocolors-cjs@2.1.3:
     resolution: {integrity: sha512-U/PBtDf35ff0D8X8D0jfdzHYEPFxAI7jJlxZXwCSez5M3190m+QobIfh+sWDWSHMCWWJN2AWamkegn6vr6YBTw==}
     engines: {node: '>=18'}
+
+  zod@4.1.12:
+    resolution: {integrity: sha512-JInaHOamG8pt5+Ey8kGmdcAcg3OL9reK8ltczgHTAwNhMys/6ThXHityHxVV2p3fkw/c+MAvBHFVYHFZDmjMCQ==}
 
 snapshots:
 
@@ -7287,3 +7303,5 @@ snapshots:
   yocto-queue@0.1.0: {}
 
   yoctocolors-cjs@2.1.3: {}
+
+  zod@4.1.12: {}
