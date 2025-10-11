@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 
-interface TelemetryPayload {
+export interface TelemetryPayload {
+  deviceId: string;
   createdAt: string;
   temperature: number;
   humidity: number;
@@ -12,22 +13,45 @@ export class TelemetryStoreService {
   private readonly dataStore = new Map<string, TelemetryPayload[]>();
   private readonly logger = new Logger(TelemetryStoreService.name);
 
-  public addRecord(deviceId: string, payload: TelemetryPayload) {
-    const arrForDevice = this.dataStore.get(deviceId);
+  public addRecord(payload: TelemetryPayload) {
+    const arrForDevice = this.dataStore.get(payload.deviceId);
     const lastRecord = arrForDevice?.at(-1);
     if (lastRecord && lastRecord.createdAt > payload.createdAt) {
       this.logger.warn(
-        `Input for deviceId: ${deviceId} is older that latest record in store`,
+        `Input for deviceId: ${payload.deviceId} is older that latest record in store`,
       );
       return;
     }
     this.dataStore.set(
-      deviceId,
+      payload.deviceId,
       arrForDevice ? [...arrForDevice, payload] : [payload],
     );
   }
 
-  public getForDevice(deviceId: string) {
-    return this.dataStore.get(deviceId);
+  public gatherDataFromStore(
+    deviceId: string | undefined,
+    from: string | undefined,
+    to: string | undefined,
+  ): TelemetryPayload[] {
+    let data: TelemetryPayload[] = this.getData(deviceId) ?? [];
+
+    if (from) {
+      const beginIndex = data.findIndex((_) => _.createdAt >= from);
+      data = data.slice(beginIndex);
+    }
+
+    if (to) {
+      const endIndex = data.findIndex((_) => _.createdAt <= to);
+      data = data.slice(0, endIndex + 1);
+    }
+
+    return data;
+  }
+
+  private getData(deviceId?: string) {
+    if (deviceId) {
+      return this.dataStore.get(deviceId);
+    }
+    return Array.from(this.dataStore.values()).flat();
   }
 }
