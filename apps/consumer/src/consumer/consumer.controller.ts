@@ -7,11 +7,12 @@ import {
 import { z } from 'zod';
 
 @Controller()
-export class ConsumerService {
+export class ConsumerController {
   constructor() {}
 
   @EventPattern('telemetry_data_emitted')
   private handleTelemetryDataEmit(data: TelemetryDataEmittedSchema) {
+    console.log('consumed data', data);
     try {
       const parsedData = telemetryDataEmitted.parse(data);
     } catch (err) {
