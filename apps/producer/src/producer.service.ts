@@ -8,8 +8,14 @@ export class ProducerService {
 
   @Interval(5000)
   public produceTelemetryData() {
+    const data = {
+      deviceId: '40a13cb7-d05e-49e9-a658-070a859d6f48',
+      timestamp: new Date().toISOString(),
+      temperature: 21,
+      humidity: 0.4,
+    };
     return this.client.emit('telemetry_data_emitted', {
-      something: Math.random(),
+      ...data,
     });
   }
 }
