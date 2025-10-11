@@ -6,7 +6,10 @@ services:
       target: dev
       context: .
     volumes:
-      - ./apps/consumer:/app
+      - ./apps/consumer:/app/apps/consumer
+      - ./packages:/app/packages
+      - /app/packages/node-lib/node_modules
+      - /app/apps/consumer/node_modules
     ports:
       - 3000:3000
     environment:
@@ -20,7 +23,10 @@ services:
       target: dev
       context: .
     volumes:
-      - ./apps/producer:/app
+      - ./apps/producer:/app/apps/producer
+      - ./packages:/app/packages
+      - /app/packages/node-lib/node_modules
+      - /app/apps/producer/node_modules
     ports:
       - 3001:3000
     environment:
