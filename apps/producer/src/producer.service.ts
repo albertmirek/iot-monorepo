@@ -1,21 +1,42 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { Interval } from '@nestjs/schedule';
+import { v4 as uuidv4 } from 'uuid';
+import { telemetryDataEmitted } from '@albertmirek/node-lib';
+import { z } from 'zod';
 
 @Injectable()
 export class ProducerService {
-  constructor(@Inject('PRODUCER_SERVICE') private client: ClientProxy) {}
+  private iotDeviceStore: string[];
+  constructor(@Inject('PRODUCER_SERVICE') private client: ClientProxy) {
+    for (let i = 0; i < 10; i++) {
+      this.iotDeviceStore.push(uuidv4());
+    }
+    console.log(
+      `iotDeviceStore populated with: ${this.iotDeviceStore.length} devices`,
+    );
+  }
 
   @Interval(5000)
   public produceTelemetryData() {
-    const data = {
-      deviceId: '40a13cb7-d05e-49e9-a658-070a859d6f48',
+    const generatedData = {
+      deviceId: this.iotDeviceStore[Math.floor(Math.random() * 10)],
       timestamp: new Date().toISOString(),
-      temperature: 21,
-      humidity: 0.4,
+      temperature: Math.floor(Math.random() * (30 - 20) + 20),
+      humidity: Math.random() * (0.6 - 0.3) + 0.3,
     };
-    return this.client.emit('telemetry_data_emitted', {
-      ...data,
-    });
+
+    try {
+      const parsedData = telemetryDataEmitted.parse(generatedData);
+      return this.client.emit('telemetry_data_emitted', {
+        ...parsedData,
+      });
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        console.error('Invalid telemetry event:', err);
+        throw new Error('Invalid telemetry event data:', err);
+      }
+      throw err;
+    }
   }
 }
