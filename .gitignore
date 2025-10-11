@@ -4,3 +4,5 @@ apps/**/node_modules
 packages/**/node_modules
 **/.pnpm-store
 **/dist
+
+tsconfig.tsbuildinfo

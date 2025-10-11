@@ -1,6 +1,6 @@
 {
   "name": "@albertmirek/node-lib",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": true,
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -9,5 +9,8 @@
     "dev": "tsc -w -p tsconfig.json",
     "build": "tsc -p tsconfig.json",
     "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "zod": "^4.1.12"
   }
 }
