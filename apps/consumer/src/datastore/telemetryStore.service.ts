@@ -48,6 +48,11 @@ export class TelemetryStoreService {
     return data;
   }
 
+  public clear() {
+    this.dataStore.clear();
+    this.logger.log('Data store cleared');
+  }
+
   private getData(deviceId?: string) {
     if (deviceId) {
       return this.dataStore.get(deviceId);
