@@ -1,4 +1,4 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { EventPattern } from '@nestjs/microservices';
 import {
   telemetryDataEmitted,
@@ -16,11 +16,15 @@ export class ConsumerController {
     console.log('consumed data', data);
     try {
       const parsedData = telemetryDataEmitted.parse(data);
-      this.telemetryStore.addRecord(data.deviceId, {
+      this.telemetryStore.addRecord({
         ...parsedData,
-        createdAt: data.timestamp,
+        createdAt: parsedData.timestamp,
       });
-      const allData = this.telemetryStore.getForDevice(data.deviceId);
+      const allData = this.telemetryStore.gatherDataFromStore(
+        data.deviceId,
+        undefined,
+        undefined,
+      );
       console.log('All data for device', allData?.length);
     } catch (err) {
       if (err instanceof z.ZodError) {
@@ -29,5 +33,14 @@ export class ConsumerController {
       }
       throw err;
     }
+  }
+
+  @Get('telemetry')
+  public getTelemetryData(
+    @Query('deviceId') deviceId?: string,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+  ) {
+    return this.telemetryStore.gatherDataFromStore(deviceId, from, to);
   }
 }
