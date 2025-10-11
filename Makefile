@@ -7,9 +7,13 @@ SHELL_PRODUCER_TTY := $(DOCKER_COMPOSE) run --rm producer
 .NOPARALLEL .PHONY: all
 all:
 	@${DOCKER_COMPOSE} pull
+	$(MAKE) build
 	$(MAKE) run
-	$(MAKE) install
 	$(MAKE) logs
+
+.PHONY .SILENT: build
+build:
+	@${DOCKER_COMPOSE} build
 
 .PHONY .SILENT: run
 run:
