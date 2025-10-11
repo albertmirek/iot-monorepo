@@ -21,7 +21,10 @@ export class ProducerService {
   }
 
   @Interval('telemetry_emit_interval', 5000)
-  public produceTelemetryData(data?: TelemetryDataEmittedSchema) {
+  public produceTelemetryData(
+    dataQueue = 'telemetry_data_emitted',
+    data?: TelemetryDataEmittedSchema,
+  ) {
     console.log('Start to emit');
     const generatedData = {
       deviceId: this.iotDeviceStore[Math.floor(Math.random() * 10)],
@@ -35,13 +38,13 @@ export class ProducerService {
     try {
       const parsedData = telemetryDataEmitted.parse(generatedData);
       console.log('Parsed');
-      return this.client.emit('telemetry_data_emitted', {
+      return this.client.emit(dataQueue, {
         ...parsedData,
       });
     } catch (err) {
       if (err instanceof z.ZodError) {
         console.error('Invalid telemetry event:', err);
-        throw new Error('Invalid telemetry event data:', err);
+        throw new Error(`Invalid telemetry event data: ${err.message}`);
       }
       throw err;
     }
