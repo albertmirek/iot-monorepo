@@ -9,7 +9,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
       {
         //TODO - config
         // imports: [ConfigModule]
-        name: 'PRODUCER_SERVICE',
+        name: 'PRODUCER_CLIENT_PROXY',
         useFactory: () => {
           const url = process.env.RABBIT_MQ_URL;
           if (!url) {

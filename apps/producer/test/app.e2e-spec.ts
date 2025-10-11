@@ -47,7 +47,7 @@ class TestConsumer {
     ScheduleModule.forRoot(),
     ClientsModule.register([
       {
-        name: 'PRODUCER_SERVICE',
+        name: 'PRODUCER_CLIENT_PROXY',
         transport: Transport.RMQ,
         options: {
           urls: [

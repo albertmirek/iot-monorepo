@@ -11,7 +11,7 @@ import { z } from 'zod';
 @Injectable()
 export class ProducerService {
   private iotDeviceStore: string[] = [];
-  constructor(@Inject('PRODUCER_SERVICE') private client: ClientProxy) {
+  constructor(@Inject('PRODUCER_CLIENT_PROXY') private client: ClientProxy) {
     for (let i = 0; i < 10; i++) {
       this.iotDeviceStore.push(uuidv4());
     }
