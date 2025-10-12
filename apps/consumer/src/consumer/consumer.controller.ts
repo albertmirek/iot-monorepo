@@ -18,12 +18,14 @@ export function createConsumerControllerFactory(
 
     @EventPattern(queuePattern)
     handleTelemetryDataEmit(data: TelemetryDataEmittedSchema) {
+      this.logger.log('New data in queue');
       try {
         const parsedData = telemetryDataEmitted.parse(data);
         this.telemetryStore.addRecord({
           ...parsedData,
           createdAt: parsedData.timestamp,
         });
+        this.logger.log(`Event consumed`);
         return; //ack
       } catch (err) {
         if (err instanceof z.ZodError) {

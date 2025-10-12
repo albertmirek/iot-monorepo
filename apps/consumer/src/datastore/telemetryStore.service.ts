@@ -23,6 +23,7 @@ export class TelemetryStoreService {
       return;
     }
 
+    this.logger.log(`Adding new data to store`);
     this.dataStore.set(
       payload.deviceId,
       arrForDevice ? [...arrForDevice, payload] : [payload],
