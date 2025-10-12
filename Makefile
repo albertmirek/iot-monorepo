@@ -31,3 +31,18 @@ down:
 .PHONY .SILENT: logs
 logs:
 	@${DOCKER_COMPOSE} logs -f
+
+
+.NOPARALLEL .PHONY: test-all
+test-all:
+	echo "stopping all containers"
+	$(MAKE) down
+
+	echo "Running Consumer tests"
+	cd apps/consumer && $(MAKE) test
+	echo "Consumer tests done"
+
+
+	echo "Running Producer tests"
+	cd apps/producer && $(MAKE) test
+	echo "Producer tests done"
