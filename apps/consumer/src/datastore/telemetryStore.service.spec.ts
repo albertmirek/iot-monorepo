@@ -1,5 +1,5 @@
 import {
-  TelemetryPayload,
+  TelemetryDataStoreRecord,
   TelemetryStoreService,
 } from './telemetryStore.service';
 import { v4 as uuidv4 } from 'uuid';
@@ -13,7 +13,9 @@ describe('TelemetryStoreService', () => {
     datastore.clear();
   });
 
-  const generateData = (data?: Partial<TelemetryPayload>): TelemetryPayload => {
+  const generateData = (
+    data?: Partial<TelemetryDataStoreRecord>,
+  ): TelemetryDataStoreRecord => {
     const deviceId: string = uuidv4();
     return {
       deviceId,

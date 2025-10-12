@@ -10,7 +10,7 @@
 ## Solution
 
 #### Datastore
-Data is stored inside a ``Map<string, TelemetryPayload[]>`` where the key
+Data is stored inside a ``Map<string, TelemetryDataStoreRecord[]>`` where the key
 is uuid of the device. When new data is to be stored:
 1. check if last stored data for device is newer than incoming data
    2. if incoming data is obsolote, it is dropped

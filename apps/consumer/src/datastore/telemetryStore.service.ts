@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 
-export interface TelemetryPayload {
+export interface TelemetryDataStoreRecord {
   deviceId: string;
   createdAt: string;
   temperature: number;
@@ -10,10 +10,10 @@ export interface TelemetryPayload {
 
 @Injectable()
 export class TelemetryStoreService {
-  private readonly dataStore = new Map<string, TelemetryPayload[]>();
+  private readonly dataStore = new Map<string, TelemetryDataStoreRecord[]>();
   private readonly logger = new Logger(TelemetryStoreService.name);
 
-  public addRecord(payload: TelemetryPayload) {
+  public addRecord(payload: TelemetryDataStoreRecord) {
     const arrForDevice = this.dataStore.get(payload.deviceId);
     const lastRecord = arrForDevice?.at(-1);
     if (lastRecord && lastRecord.createdAt > payload.createdAt) {
@@ -33,8 +33,8 @@ export class TelemetryStoreService {
     deviceId: string | undefined,
     from: string | undefined,
     to: string | undefined,
-  ): TelemetryPayload[] {
-    let data: TelemetryPayload[] = this.getData(deviceId) ?? [];
+  ): TelemetryDataStoreRecord[] {
+    let data: TelemetryDataStoreRecord[] = this.getData(deviceId) ?? [];
 
     if (from) {
       const beginIndex = data.findIndex((_) => _.createdAt >= from);
