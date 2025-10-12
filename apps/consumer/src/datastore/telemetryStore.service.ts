@@ -22,6 +22,7 @@ export class TelemetryStoreService {
       );
       return;
     }
+
     this.dataStore.set(
       payload.deviceId,
       arrForDevice ? [...arrForDevice, payload] : [payload],
@@ -37,12 +38,18 @@ export class TelemetryStoreService {
 
     if (from) {
       const beginIndex = data.findIndex((_) => _.createdAt >= from);
-      data = data.slice(beginIndex);
+      if (beginIndex !== -1) {
+        data = data.slice(beginIndex);
+      } else {
+        data = [];
+      }
     }
 
     if (to) {
-      const endIndex = data.findIndex((_) => _.createdAt <= to);
-      data = data.slice(0, endIndex + 1);
+      const endIndex = data.findIndex((_) => _.createdAt > to);
+      if (endIndex !== -1) {
+        data = data.slice(0, endIndex);
+      }
     }
 
     return data;
