@@ -119,7 +119,6 @@ describe('TelemetryStoreService', () => {
     let nowMinusThreeDays: string;
     let nowMinusTwoDays: string;
     let nowMinusOneDay: string;
-    let nowIso: string;
     let nowPlusOneDay: string;
 
     beforeEach(() => {
@@ -128,7 +127,6 @@ describe('TelemetryStoreService', () => {
       nowMinusThreeDays = subtractDays(now, 3).toISOString();
       nowMinusTwoDays = subtractDays(now, 2).toISOString();
       nowMinusOneDay = subtractDays(now, 1).toISOString();
-      nowIso = now.toISOString();
       nowPlusOneDay = addDays(now, 1).toISOString();
 
       const device1 = 'device-1';
