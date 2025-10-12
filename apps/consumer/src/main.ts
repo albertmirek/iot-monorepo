@@ -5,15 +5,19 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  const rabbitUrl = process.env.RABBIT_MQ_URL;
-  if (!rabbitUrl) {
-    throw new Error('RABBIT_MQ_URL env not set');
+  const url = process.env.RABBIT_MQ_URL;
+  const queue = process.env.TELEMETRY_QUEUE;
+  if (!url) {
+    throw new Error('Rabbit url is not set');
+  } else if (!queue) {
+    throw new Error('Telemetry queue is not set');
   }
+
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.RMQ,
     options: {
-      urls: [rabbitUrl],
-      queue: 'telemetry_data_emitted',
+      urls: [url],
+      queue: queue,
       queueOptions: { durable: true },
     },
   });

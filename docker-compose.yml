@@ -32,6 +32,7 @@ services:
       - 3001:3000
     environment:
       RABBIT_MQ_URL: amqp://admin:admin@rabbitmq:5672
+      TELEMETRY_QUEUE: telemetry_data_emitted_queue
     depends_on:
       - rabbitmq
 
