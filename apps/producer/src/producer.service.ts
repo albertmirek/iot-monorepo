@@ -29,7 +29,7 @@ export class ProducerService {
     this.queue = eventQueue;
   }
 
-  @Interval('telemetry_emit_interval', 5000)
+  @Interval('telemetry_emit_interval', 10000)
   public produceTelemetryData(data?: TelemetryDataEmittedSchema) {
     this.logger.log('Starting to emit data');
     const generatedData = {
