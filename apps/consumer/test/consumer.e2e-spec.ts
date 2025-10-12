@@ -60,7 +60,6 @@ describe('Consumer (e2e)', () => {
 
   const getInputData = (): TelemetryDataEmittedSchema => {
     const deviceId: string = uuidv4();
-    console.log('deviceIdddd', deviceId);
     return {
       deviceId,
       timestamp: new Date().toISOString(),
@@ -185,6 +184,8 @@ describe('Consumer (e2e)', () => {
     expect(storedDataAll.length).toEqual(5);
   });
 
+  describe('query based on filters', () => {});
+
   it('Should skip data with older datetime than already stored', async () => {
     const now = new Date();
 
@@ -260,21 +261,14 @@ describe('Consumer (e2e)', () => {
 
   it('Should return data through REST endpoint filtered by date', async () => {
     const now = new Date();
-    console.log('currentDate', now);
 
     const nowPlusOneDay = new Date(addDays(now, 1)).toISOString();
     const nowPlusTwoDays = new Date(addDays(now, 2)).toISOString();
     const nowPlusThreeDays = new Date(addDays(now, 3)).toISOString();
-    console.log('plusdates', [nowPlusOneDay, nowPlusTwoDays, nowPlusThreeDays]);
 
     const nowMinusOneDay = new Date(subtractDays(now, 1)).toISOString();
     const nowMinusTwoDays = new Date(subtractDays(now, 2)).toISOString();
     const nowMinusThreeDays = new Date(subtractDays(now, 3)).toISOString();
-    console.log('minusDates', [
-      nowMinusOneDay,
-      nowMinusTwoDays,
-      nowMinusThreeDays,
-    ]);
 
     // Emit data in chronological order (oldest first) to avoid rejection by datastore
     const validData = getInputData();
@@ -326,5 +320,86 @@ describe('Consumer (e2e)', () => {
     expect(resFromNow.body[1].createdAt).toEqual(nowPlusOneDay);
     expect(resFromNow.body[2].createdAt).toEqual(nowPlusTwoDays);
     expect(resFromNow.body[3].createdAt).toEqual(nowPlusThreeDays);
+  });
+
+  it('Should return sorted data for multiple devices with date filtering', async () => {
+    const now = new Date();
+
+    const nowMinusThreeDays = subtractDays(now, 3).toISOString();
+    const nowMinusTwoDays = subtractDays(now, 2).toISOString();
+    const nowMinusOneDay = subtractDays(now, 1).toISOString();
+    const nowIso = now.toISOString();
+    const nowPlusOneDay = addDays(now, 1).toISOString();
+
+    // Create two devices with interleaved timestamps
+    const device1 = getInputData();
+    const device2 = getInputData();
+
+    // Device 1: -3, -1, +1 days
+    emitData({ ...device1, timestamp: nowMinusThreeDays });
+    emitData({ ...device1, timestamp: nowMinusOneDay });
+    emitData({ ...device1, timestamp: nowPlusOneDay });
+
+    // Device 2: -2, now days
+    emitData({ ...device2, timestamp: nowMinusTwoDays });
+    const lastObservable = emitData({ ...device2, timestamp: nowIso });
+
+    await waitForConsumptionOfEmitedData(lastObservable);
+
+    // Query all devices - data should be sorted chronologically
+    const allData = await request(app.getHttpServer())
+      .get('/telemetry')
+      .expect(200);
+
+    expect(allData.body).toBeDefined();
+    expect(allData.body.length).toEqual(5);
+    
+    // Verify data is sorted chronologically across all devices
+    expect(allData.body[0].createdAt).toEqual(nowMinusThreeDays);
+    expect(allData.body[0].deviceId).toEqual(device1.deviceId);
+    expect(allData.body[1].createdAt).toEqual(nowMinusTwoDays);
+    expect(allData.body[1].deviceId).toEqual(device2.deviceId);
+    expect(allData.body[2].createdAt).toEqual(nowMinusOneDay);
+    expect(allData.body[2].deviceId).toEqual(device1.deviceId);
+    expect(allData.body[3].createdAt).toEqual(nowIso);
+    expect(allData.body[3].deviceId).toEqual(device2.deviceId);
+    expect(allData.body[4].createdAt).toEqual(nowPlusOneDay);
+    expect(allData.body[4].deviceId).toEqual(device1.deviceId);
+
+    // Test filtering: get data up to "now-1" (should include both devices, sorted)
+    const resUpToMinusOne = await request(app.getHttpServer())
+      .get('/telemetry')
+      .query({ to: nowMinusOneDay })
+      .expect(200);
+
+    expect(resUpToMinusOne.body.length).toEqual(3);
+    expect(resUpToMinusOne.body[0].createdAt).toEqual(nowMinusThreeDays);
+    expect(resUpToMinusOne.body[1].createdAt).toEqual(nowMinusTwoDays);
+    expect(resUpToMinusOne.body[2].createdAt).toEqual(nowMinusOneDay);
+
+    // Test filtering: get data from "now-1" onwards (should include both devices, sorted)
+    const resFromMinusOne = await request(app.getHttpServer())
+      .get('/telemetry')
+      .query({ from: nowMinusOneDay })
+      .expect(200);
+
+    expect(resFromMinusOne.body.length).toEqual(3);
+    expect(resFromMinusOne.body[0].createdAt).toEqual(nowMinusOneDay);
+    expect(resFromMinusOne.body[0].deviceId).toEqual(device1.deviceId);
+    expect(resFromMinusOne.body[1].createdAt).toEqual(nowIso);
+    expect(resFromMinusOne.body[1].deviceId).toEqual(device2.deviceId);
+    expect(resFromMinusOne.body[2].createdAt).toEqual(nowPlusOneDay);
+    expect(resFromMinusOne.body[2].deviceId).toEqual(device1.deviceId);
+
+    // Test filtering: date range across both devices
+    const resRange = await request(app.getHttpServer())
+      .get('/telemetry')
+      .query({ from: nowMinusTwoDays, to: nowIso })
+      .expect(200);
+
+    expect(resRange.body.length).toEqual(3);
+    expect(resRange.body[0].createdAt).toEqual(nowMinusTwoDays);
+    expect(resRange.body[1].createdAt).toEqual(nowMinusOneDay);
+    expect(resRange.body[2].createdAt).toEqual(nowIso);
   });
 });

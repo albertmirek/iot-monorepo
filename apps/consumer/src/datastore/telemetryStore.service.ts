@@ -36,6 +36,10 @@ export class TelemetryStoreService {
   ): TelemetryDataStoreRecord[] {
     let data: TelemetryDataStoreRecord[] = this.getData(deviceId) ?? [];
 
+    if (!deviceId && data.length > 0) {
+      data = data.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+    }
+
     if (from) {
       const beginIndex = data.findIndex((_) => _.createdAt >= from);
       if (beginIndex !== -1) {
