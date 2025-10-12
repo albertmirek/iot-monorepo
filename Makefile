@@ -7,9 +7,15 @@ SHELL_PRODUCER_TTY := $(DOCKER_COMPOSE) run --rm producer
 .NOPARALLEL .PHONY: all
 all:
 	@${DOCKER_COMPOSE} pull
+	$(MAKE) build-lib
 	$(MAKE) build
 	$(MAKE) run
 	$(MAKE) logs
+
+.PHONY .SILENT: build-lib
+build-lib:
+	@echo "Building @albertmirek/node-lib..."
+	@cd packages/node-lib && pnpm install && pnpm build
 
 .PHONY .SILENT: build
 build:
@@ -35,6 +41,8 @@ logs:
 
 .NOPARALLEL .PHONY: test-all
 test-all:
+	echo "Building node-lib"
+	$(MAKE) build-lib
 	echo "stopping all containers"
 	$(MAKE) down
 	@${DOCKER_COMPOSE} up -d rabbitmq

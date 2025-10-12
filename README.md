@@ -45,16 +45,18 @@ make all
 
 This command will:
 1. Pull necessary Docker images
-2. Build the services
-3. Start all containers (RabbitMQ, Producer, Consumer)
-4. Display logs from all services
+2. Build the shared library (`@albertmirek/node-lib`)
+3. Build the Docker images for services
+4. Start all containers (RabbitMQ, Producer, Consumer)
+5. Display logs from all services
 
 **Other useful commands:**
 ```bash
-make build    # Build Docker images
-make run      # Start containers
-make down     # Stop all containers
-make logs     # View logs
+make build-lib   # Build the shared library package
+make build       # Build Docker images
+make run         # Start containers
+make down        # Stop all containers
+make logs        # View logs
 ```
 
 ### Running Tests
@@ -65,10 +67,11 @@ make test-all
 ```
 
 This command:
-1. Stops all running containers
-2. Starts RabbitMQ
-3. Runs Consumer tests (unit + e2e)
-4. Runs Producer tests (unit + e2e)
+1. Builds the shared library (`@albertmirek/node-lib`)
+2. Stops all running containers
+3. Starts RabbitMQ
+4. Runs Consumer tests (unit + e2e)
+5. Runs Producer tests (unit + e2e)
 
 ### How It Works
 
@@ -197,11 +200,17 @@ iot-monorepo/
 │       │   └── main.ts
 │       └── test/           # Unit & E2E tests
 ├── packages/
-│   └── node-lib/           # Shared library
-│       └── schema/         # Zod validation schemas
+│   └── node-lib/           # Shared library (@albertmirek/node-lib)
+│       └── schema/         # Zod validation schemas (shared between services)
 ├── docker-compose.yml      # Service orchestration
 └── Makefile               # Build & test automation
 ```
+
+**Shared Library (`@albertmirek/node-lib`):**
+- Contains shared TypeScript code used by both producer and consumer services
+- Exports Zod schemas for telemetry data validation
+- Must be built before services can use it (TypeScript compilation to JavaScript)
+- Built automatically when running `make all` or `make test-all`
 
 ### Technology Stack
 
