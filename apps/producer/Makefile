@@ -1,6 +1,7 @@
 DOCKER_COMPOSE ?= "docker-compose"
 
 test-e2e: export RABBIT_MQ_URL=amqp://admin:admin@localhost:5672
+test-e2e: export TELEMETRY_QUEUE=dataQueueTest
 
 .NOPARALLEL .PHONY: test
 test:

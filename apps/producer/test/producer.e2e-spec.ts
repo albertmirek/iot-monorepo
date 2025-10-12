@@ -12,7 +12,7 @@ import {
 import { ProducerService } from '../src/producer.service';
 import { TelemetryDataEmittedSchema } from '@albertmirek/node-lib';
 
-const TEST_DATA_QUEUE = 'dataQueueTest';
+const TEST_DATA_QUEUE = process.env.TELEMETRY_QUEUE ?? 'dataQueueTest';
 
 @Controller()
 class TestConsumer {
@@ -108,7 +108,7 @@ describe('AppController (e2e)', () => {
   });
 
   const emitData = async (data?: TelemetryDataEmittedSchema) => {
-    const emitObservable = service.produceTelemetryData(TEST_DATA_QUEUE, data);
+    const emitObservable = service.produceTelemetryData(data);
     const emitPromise = new Promise<void>((resolve, reject) => {
       const timeout = setTimeout(() => reject(new Error('Emit timeout')), 3000);
       emitObservable.subscribe({

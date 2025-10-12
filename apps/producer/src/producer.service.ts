@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { Interval } from '@nestjs/schedule';
 import { v4 as uuidv4 } from 'uuid';
@@ -10,7 +10,9 @@ import { z } from 'zod';
 
 @Injectable()
 export class ProducerService {
+  public readonly logger = new Logger(ProducerService.name);
   private iotDeviceStore: string[] = [];
+  private readonly queue: string;
   constructor(@Inject('PRODUCER_CLIENT_PROXY') private client: ClientProxy) {
     for (let i = 0; i < 10; i++) {
       this.iotDeviceStore.push(uuidv4());
@@ -18,14 +20,18 @@ export class ProducerService {
     console.log(
       `iotDeviceStore populated with: ${this.iotDeviceStore.length} devices`,
     );
+
+    const eventQueue = process.env.TELEMETRY_QUEUE;
+    if (!eventQueue) {
+      throw new Error(`TELEMETRY_QUEUE env not set`);
+    }
+
+    this.queue = eventQueue;
   }
 
   @Interval('telemetry_emit_interval', 5000)
-  public produceTelemetryData(
-    dataQueue = 'telemetry_data_emitted',
-    data?: TelemetryDataEmittedSchema,
-  ) {
-    console.log('Start to emit');
+  public produceTelemetryData(data?: TelemetryDataEmittedSchema) {
+    this.logger.log('Starting to emit data');
     const generatedData = {
       deviceId: this.iotDeviceStore[Math.floor(Math.random() * 10)],
       timestamp: new Date().toISOString(),
@@ -33,12 +39,11 @@ export class ProducerService {
       humidity: Math.random() * (0.6 - 0.3) + 0.3,
       ...data,
     };
-    console.log('Generated');
 
     try {
       const parsedData = telemetryDataEmitted.parse(generatedData);
-      console.log('Parsed');
-      return this.client.emit(dataQueue, {
+      this.logger.log('Data parsed .... emitting');
+      return this.client.emit(this.queue, {
         ...parsedData,
       });
     } catch (err) {
