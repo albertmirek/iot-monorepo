@@ -7,18 +7,21 @@ import { ConsumerModule } from './consumer/consumer.module';
   imports: [
     ClientsModule.registerAsync([
       {
-        name: 'CONSUMER_SERVICE',
+        name: 'CONSUMER_CLIENT_PROXY',
         useFactory: () => {
           const url = process.env.RABBIT_MQ_URL;
+          const queue = process.env.TELEMETRY_QUEUE;
           if (!url) {
             throw new Error('Rabbit url is not set');
+          } else if (!queue) {
+            throw new Error('Telemetry queue is not set');
           }
 
           return {
             transport: Transport.RMQ,
             options: {
               urls: [url],
-              queue: 'telemetry_data_emitted',
+              queue: queue,
             },
           };
         },

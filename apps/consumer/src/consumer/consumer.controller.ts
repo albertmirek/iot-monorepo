@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Logger, Query } from '@nestjs/common';
 import { EventPattern } from '@nestjs/microservices';
 import {
   telemetryDataEmitted,
@@ -7,40 +7,47 @@ import {
 import { z } from 'zod';
 import { TelemetryStoreService } from '../datastore/telemetryStore.service';
 
-@Controller()
-export class ConsumerController {
-  constructor(private readonly telemetryStore: TelemetryStoreService) {}
+export function createConsumerControllerFactory(
+  queuePattern = 'telemetry_data_emitted_queue',
+) {
+  @Controller()
+  class ConsumerController {
+    public readonly logger = new Logger(ConsumerController.name);
 
-  @EventPattern('telemetry_data_emitted')
-  private handleTelemetryDataEmit(data: TelemetryDataEmittedSchema) {
-    console.log('consumed data', data);
-    try {
-      const parsedData = telemetryDataEmitted.parse(data);
-      this.telemetryStore.addRecord({
-        ...parsedData,
-        createdAt: parsedData.timestamp,
-      });
-      const allData = this.telemetryStore.gatherDataFromStore(
-        data.deviceId,
-        undefined,
-        undefined,
-      );
-      console.log('All data for device', allData?.length);
-    } catch (err) {
-      if (err instanceof z.ZodError) {
-        console.error('Invalid telemetry event:', err);
-        throw new Error('Invalid telemetry event data:', err);
+    constructor(public readonly telemetryStore: TelemetryStoreService) {}
+
+    @EventPattern(queuePattern)
+    handleTelemetryDataEmit(data: TelemetryDataEmittedSchema) {
+      try {
+        const parsedData = telemetryDataEmitted.parse(data);
+        this.telemetryStore.addRecord({
+          ...parsedData,
+          createdAt: parsedData.timestamp,
+        });
+        return; //ack
+      } catch (err) {
+        if (err instanceof z.ZodError) {
+          this.logger.error('Validation failer for telemetry data', {
+            error: err,
+            deviceId: data.deviceId,
+            data: data,
+          });
+          return; //ack
+        }
+        this.logger.error('Unexpected error processing telemetry event', err);
+        throw err;
       }
-      throw err;
+    }
+
+    @Get('telemetry')
+    getTelemetryData(
+      @Query('deviceId') deviceId?: string,
+      @Query('from') from?: string,
+      @Query('to') to?: string,
+    ) {
+      return this.telemetryStore.gatherDataFromStore(deviceId, from, to);
     }
   }
 
-  @Get('telemetry')
-  public getTelemetryData(
-    @Query('deviceId') deviceId?: string,
-    @Query('from') from?: string,
-    @Query('to') to?: string,
-  ) {
-    return this.telemetryStore.gatherDataFromStore(deviceId, from, to);
-  }
+  return ConsumerController;
 }

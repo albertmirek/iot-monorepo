@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { ConsumerController } from './consumer.controller';
+import { createConsumerControllerFactory } from './consumer.controller';
 import { DatastoreModule } from '../datastore/datastore.module';
 
 @Module({
   imports: [DatastoreModule],
-  controllers: [ConsumerController],
+  controllers: [createConsumerControllerFactory(process.env.TELEMETRY_QUEUE)],
 })
 export class ConsumerModule {}
