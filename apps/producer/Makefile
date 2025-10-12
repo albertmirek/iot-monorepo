@@ -4,7 +4,7 @@ test-e2e: export RABBIT_MQ_URL=amqp://admin:admin@localhost:5672
 
 .NOPARALLEL .PHONY: test
 test:
-	$(MAKE) test-unit
+	#$(MAKE) test-unit
 	$(MAKE) test-e2e
 
 

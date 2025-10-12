@@ -37,6 +37,8 @@ logs:
 test-all:
 	echo "stopping all containers"
 	$(MAKE) down
+	@${DOCKER_COMPOSE} up -d rabbitmq
+	sleep 3
 
 	echo "Running Consumer tests"
 	cd apps/consumer && $(MAKE) test
